@@ -1,4 +1,5 @@
 from compression import LZW
+from compression.helpers import read_data
 
 class TestLZW:
     def test_encode(self)->None:
@@ -37,3 +38,53 @@ class TestLZW:
         decoded_data = LZW().decode(encoded_data, abracadabra_set, verbose=False)
 
         assert abracadabra_data == decoded_data
+
+    def test_encode_decode_filesystem(self)->None:
+        lzw = LZW()
+        lzw.encode_from_file("test/data/abracadabra.txt", False)
+        lzw.save_encoded_data("test/data/encoded_abracadabra")
+        del lzw
+
+        decoded_data = LZW().decode_from_file("test/data/encoded_abracadabra.pickle", "test/data/decoded_abracadabra.txt")
+        decoded_str = "".join([chr(val) for val in decoded_data])
+
+        assert decoded_str == "abracadabra"
+
+    def test_encode_decode_filesystem_with_k(self)->None:
+        dict_k = 8
+        lzw = LZW(dictionary_k=dict_k)
+        lzw.encode_from_file("test/data/abracadabra.txt", False)
+        lzw.save_encoded_data("test/data/encoded_abracadabra")
+        del lzw
+
+        decoded_data = LZW().decode_from_file(f"test/data/encoded_abracadabra.{dict_k}", "test/data/decoded_abracadabra.txt")
+        decoded_str = "".join([chr(val) for val in decoded_data])
+
+        assert decoded_str == "abracadabra"
+
+    def test_corpus(self)->None:
+        lzw = LZW()
+        lzw.encode_from_file("test/data/corpus16MB.txt", False)
+        lzw.save_encoded_data("test/data/encoded_corpus16MB")
+        del lzw
+
+        LZW().decode_from_file("test/data/encoded_corpus16MB.pickle", "test/data/decoded_corpus16MB.txt")
+        decoded_data, _ = read_data("test/data/decoded_corpus16MB.txt", False)
+        original_data, _ = read_data("test/data/corpus16MB.txt", False)
+
+        assert decoded_data == original_data
+
+    def test_corpus_with_k(self)->None:
+        dict_k = 16
+        lzw = LZW(dictionary_k=dict_k)
+        lzw.encode_from_file("test/data/corpus16MB.txt", False)
+        lzw.save_encoded_data("test/data/encoded_corpus16MB")
+        del lzw
+
+        LZW().decode_from_file(f"test/data/encoded_corpus16MB.{dict_k}", "test/data/decoded_corpus16MB_with_k.txt")
+        decoded_data, _ = read_data("test/data/decoded_corpus16MB_with_k.txt", False)
+        original_data, _ = read_data("test/data/corpus16MB.txt", False)
+
+        assert decoded_data == original_data
+
+

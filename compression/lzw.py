@@ -1,4 +1,4 @@
-from compression.helpers import read_data, write_data
+from compression.helpers import read_data, write_data, write_encoded_data, read_encoded_data
 from time import time
 
 class LZW:
@@ -8,7 +8,7 @@ class LZW:
             dictionary_k: int = -1
     ) -> None:
         if dictionary_k != -1:
-            assert dictionary_k >= 3
+            assert dictionary_k >= 8
         self.dictionary_k = dictionary_k
 
 
@@ -79,6 +79,15 @@ class LZW:
 
         return self.encode(data, data_set, verbose)
     
+    def save_encoded_data(
+            self,
+            output_path: str,
+    )->None:
+        if self.dictionary_k == -1:
+            write_encoded_data(f"{output_path}.pickle", {"data": self.encoded_data, "set": self.original_set})
+        else:
+            write_encoded_data(f"{output_path}.{self.dictionary_k}", self.encoded_data)
+    
     def decode(
             self,
             encoded_data: list,
@@ -121,3 +130,23 @@ class LZW:
             print(f"Total time: {total_time_end-total_time_start} seconds")
 
         return output
+
+    def decode_from_file(
+            self,
+            input_path: str,
+            output_path: str = ""
+    )->list:
+        
+        if ".pickle" in input_path:
+            encoded_dict = read_encoded_data(input_path)
+            decoded_data = self.decode(encoded_dict["data"], encoded_dict["set"], False)
+        else:
+            dict_k = int(input_path.split(".")[-1])
+            encoded_data = read_encoded_data(input_path)
+            data_set = {i for i in range(2**dict_k)}
+            decoded_data = self.decode(encoded_data, data_set, False)
+
+        if output_path:
+            write_data(output_path, decoded_data)
+
+        return decoded_data
