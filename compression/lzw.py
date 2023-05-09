@@ -7,6 +7,8 @@ class LZW:
             self,
             dictionary_k: int = -1
     ) -> None:
+        if dictionary_k != -1:
+            assert dictionary_k >= 3
         self.dictionary_k = dictionary_k
 
 
@@ -15,7 +17,7 @@ class LZW:
             original_data: list,
             original_set: set, 
             verbose: bool = True
-    )->list:
+    )->tuple:
         
         if verbose:
             total_time_start = time()
@@ -27,7 +29,7 @@ class LZW:
         if verbose:
             encoding_time_start = time()
 
-        dictionary = {(value,): i for i, value in enumerate(sorted(self.original_set))}
+        dictionary = {(value,): i for i, value in enumerate(self.original_set)}
 
         if verbose:
             print(f"Starting dictionary: {dictionary}")
@@ -63,6 +65,19 @@ class LZW:
             print(f"Total time: {total_time_end-total_time_start} seconds")
 
         return output, dictionary
+    
+    def encode_from_file(
+            self,
+            input_path: str,
+            verbose: bool = True
+    )->tuple:
+        get_set = (self.dictionary_k == -1)
+        data, data_set = read_data(input_path, save_set=get_set)
+
+        if data_set is None:
+            data_set = {i for i in range(2**self.dictionary_k)}
+
+        return self.encode(data, data_set, verbose)
     
     def decode(
             self,
