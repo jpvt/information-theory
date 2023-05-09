@@ -1,10 +1,10 @@
-from helpers import read_data, write_data
+from compression.helpers import read_data, write_data
 from time import time
 
 class LZW:
 
     def __init__(
-            self
+            self,
     ) -> None:
         self.input_path = None
         self.encoded_output_path = None
@@ -52,6 +52,8 @@ class LZW:
 
         if current_arr:
             output.append(dictionary[current_arr])
+            combined_arr = current_arr + (-1,)
+            dictionary[combined_arr] = next_idx
 
         if verbose:
             encoding_time_end = time()
@@ -64,7 +66,7 @@ class LZW:
             print(f"Encoding time: {encoding_time_end-encoding_time_start} seconds")
             print(f"Total time: {total_time_end-total_time_start} seconds")
 
-        return output
+        return output, dictionary
     
     def decode(
             self,
@@ -108,5 +110,11 @@ class LZW:
             print(f"Total time: {total_time_end-total_time_start} seconds")
 
         return output
+    
+    # def decode_from_file(
+    #         self,
+    #         encoded_file_path: str,
+
+    # )->list:
 
     
