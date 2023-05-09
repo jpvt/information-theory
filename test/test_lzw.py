@@ -16,3 +16,11 @@ class TestLZW:
         assert encoded_data == expected_data
         assert final_dict == expected_dict
 
+    def test_decoder(self)->None:
+        abracadabra_data = [ord(val) for val in "abracadabra"]
+        abracadabra_set = set(abracadabra_data)
+
+        encoded_data, _ = LZW().encode(original_data=abracadabra_data, original_set=abracadabra_set, verbose=False)
+        decoded_data = LZW().decode(encoded_data, abracadabra_set, verbose=False)
+
+        assert abracadabra_data == decoded_data
