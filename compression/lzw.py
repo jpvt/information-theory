@@ -15,15 +15,18 @@ class LZW:
 
 
     def encode(
-            self, 
-            input_path: str, 
-            save_file: bool = True, 
+            self,
+            original_data: list,
+            original_set: set, 
             verbose: bool = True
     )->list:
         
         if verbose:
             total_time_start = time()
-        self.original_data, self.original_set = read_data(input_path=input_path, save_set=True)
+
+        self.original_data, self.original_set = original_data, original_set
+        del original_data 
+        del original_set
 
         if verbose:
             encoding_time_start = time()
@@ -54,9 +57,6 @@ class LZW:
             encoding_time_end = time()
             print(f"Final dictionary: {dictionary}")
 
-        if save_file:
-            write_data(f"encoded_{input_path}.lzw", output)
-
         self.encoded_data = output
 
         if verbose:
@@ -68,10 +68,45 @@ class LZW:
     
     def decode(
             self,
-            input_path: str = "",
-            save_file: bool = True, 
-            verbose: bool = None
+            encoded_data: list,
+            data_set: set,
+            verbose: bool = True
     )->list:
-        pass
+    
+        if verbose:
+            total_time_start = time()
+            encoding_time_start = time()
+
+        reverse_dictionary = {i: (value,) for i, value in enumerate(sorted(data_set))}
+
+        if verbose:
+            print(f"Starting dictionary: {reverse_dictionary}")
+
+        current_arr = encoded_data[0]
+        output = [reverse_dictionary[current_arr]]
+
+        for idx in encoded_data[1:]:
+            if idx in reverse_dictionary:
+                decoded_arr = reverse_dictionary[idx]
+            else:
+                decoded_arr = reverse_dictionary[current_arr] + (reverse_dictionary[current_arr][0],)
+
+            output.append(decoded_arr)
+            combined_arr = reverse_dictionary[current_arr] + (decoded_arr[0],)
+            reverse_dictionary[len(reverse_dictionary)] = combined_arr
+            current_arr = idx
+
+        if verbose:
+            encoding_time_end = time()
+            print(f"Final dictionary: {reverse_dictionary}")
+
+        output = [item for sublist in output for item in sublist]
+
+        if verbose:
+            total_time_end = time()
+            print(f"Encoding time: {encoding_time_end-encoding_time_start} seconds")
+            print(f"Total time: {total_time_end-total_time_start} seconds")
+
+        return output
 
     
