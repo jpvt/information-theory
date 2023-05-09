@@ -5,13 +5,9 @@ class LZW:
 
     def __init__(
             self,
+            dictionary_k: int = -1
     ) -> None:
-        self.input_path = None
-        self.encoded_output_path = None
-        self.original_data = None
-        self.original_set = None
-        self.encoded_data = None
-        self.decoded_data = None
+        self.dictionary_k = dictionary_k
 
 
     def encode(
@@ -110,11 +106,3 @@ class LZW:
             print(f"Total time: {total_time_end-total_time_start} seconds")
 
         return output
-    
-    # def decode_from_file(
-    #         self,
-    #         encoded_file_path: str,
-
-    # )->list:
-
-    
