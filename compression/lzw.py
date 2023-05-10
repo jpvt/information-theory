@@ -38,17 +38,21 @@ class LZW:
             combined_arr = current_arr + (num,)
             if combined_arr in dictionary:
                 current_arr = combined_arr
-            else:
-                output.append(dictionary[current_arr])
+                continue
+            elif self.dictionary_k == -1 or len(dictionary) < 2**self.dictionary_k:
                 dictionary[combined_arr] = next_idx
                 next_idx += 1
-                current_arr = (num,)
+
+            output.append(dictionary[current_arr])
+            current_arr = (num,)
 
         if current_arr:
             output.append(dictionary[current_arr])
             combined_arr = current_arr + (-1,)
-            dictionary[combined_arr] = next_idx
-
+            if self.dictionary_k != -1 and len(dictionary) == 2**self.dictionary_k:
+                pass
+            else:
+                dictionary[combined_arr] = next_idx
         encoding_time_end = time()
         if verbose:
             print(f"Final dictionary: {dictionary}")
@@ -59,6 +63,8 @@ class LZW:
         if verbose:
             print(f"Encoding time: {total_encoding_time} seconds")
 
+        print(
+            f"len dictionary = {len(dictionary)} len output = {len(output)} len original = {len(self.original_data)} len_original/len_ouput = {len(self.original_data)/len(output)}")
         return output, dictionary, total_encoding_time
 
     def encode_from_file(
@@ -70,7 +76,7 @@ class LZW:
         data, data_set = read_data(input_path, save_set=get_set)
 
         if data_set is None:
-            data_set = {i for i in range(2**self.dictionary_k)}
+            data_set = {i for i in range(2**8)}
 
         return self.encode(data, data_set, verbose)
 
@@ -146,7 +152,7 @@ class LZW:
         else:
             dict_k = int(input_path.split(".")[-1])
             encoded_data = read_encoded_data(input_path, get_data_set=False)
-            data_set = {i for i in range(2**dict_k)}
+            data_set = {i for i in range(2**8)}
             decoded_data = self.decode(encoded_data, data_set, False)
 
         if output_path:
