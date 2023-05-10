@@ -79,7 +79,7 @@ class LZW:
             output_path: str,
     )->None:
         if self.dictionary_k == -1:
-            write_encoded_data(f"{output_path}.pickle", {"data": self.encoded_data, "set": self.original_set})
+            write_encoded_data(f"{output_path}.bin",data=self.encoded_data, data_set=list(self.original_set))
         else:
             write_encoded_data(f"{output_path}.{self.dictionary_k}", self.encoded_data)
     
@@ -132,12 +132,15 @@ class LZW:
             output_path: str = ""
     )->list:
         
-        if ".pickle" in input_path:
-            encoded_dict = read_encoded_data(input_path)
-            decoded_data = self.decode(encoded_dict["data"], encoded_dict["set"], False)
+        if ".bin" in input_path:
+            encoded_files = read_encoded_data(input_path)
+            data = encoded_files[0]
+            data_set = set(encoded_files[1])
+            print(len(data), data_set)
+            decoded_data = self.decode(data, data_set, False)
         else:
             dict_k = int(input_path.split(".")[-1])
-            encoded_data = read_encoded_data(input_path)
+            encoded_data = read_encoded_data(input_path, get_data_set=False)
             data_set = {i for i in range(2**dict_k)}
             decoded_data = self.decode(encoded_data, data_set, False)
 

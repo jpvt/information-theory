@@ -53,7 +53,7 @@ class TestLZW:
         del lzw
 
         decoded_data = LZW().decode_from_file(
-            "test/data/encoded_abracadabra.pickle", "test/data/decoded_abracadabra.txt")
+            "test/data/encoded_abracadabra.bin", "test/data/decoded_abracadabra.txt")
         decoded_str = "".join([chr(val) for val in decoded_data])
 
         assert decoded_str == "abracadabra"
@@ -77,7 +77,7 @@ class TestLZW:
         lzw.save_encoded_data("test/data/encoded_corpus16MB")
         del lzw
 
-        LZW().decode_from_file("test/data/encoded_corpus16MB.pickle",
+        LZW().decode_from_file("test/data/encoded_corpus16MB.bin",
                                "test/data/decoded_corpus16MB.txt")
         decoded_data, _ = read_data("test/data/decoded_corpus16MB.txt", False)
         original_data, _ = read_data("test/data/corpus16MB.txt", False)
