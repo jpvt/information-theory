@@ -1,6 +1,7 @@
 from compression.helpers import read_data, write_data, write_encoded_data, read_encoded_data
 from time import time
 
+
 class LZW:
 
     def __init__(
@@ -11,16 +12,15 @@ class LZW:
             assert dictionary_k >= 8
         self.dictionary_k = dictionary_k
 
-
     def encode(
             self,
             original_data: list,
-            original_set: set, 
+            original_set: set,
             verbose: bool = True
-    )->tuple:
+    ) -> tuple:
 
         self.original_data, self.original_set = original_data, original_set
-        del original_data 
+        del original_data
         del original_set
 
         encoding_time_start = time()
@@ -60,12 +60,12 @@ class LZW:
             print(f"Encoding time: {total_encoding_time} seconds")
 
         return output, dictionary, total_encoding_time
-    
+
     def encode_from_file(
             self,
             input_path: str,
             verbose: bool = True
-    )->tuple:
+    ) -> tuple:
         get_set = (self.dictionary_k == -1)
         data, data_set = read_data(input_path, save_set=get_set)
 
@@ -73,28 +73,31 @@ class LZW:
             data_set = {i for i in range(2**self.dictionary_k)}
 
         return self.encode(data, data_set, verbose)
-    
+
     def save_encoded_data(
             self,
             output_path: str,
-    )->None:
+    ) -> None:
         if self.dictionary_k == -1:
-            write_encoded_data(f"{output_path}.bin",data=self.encoded_data, data_set=list(self.original_set))
+            write_encoded_data(
+                f"{output_path}.bin", data=self.encoded_data, data_set=list(self.original_set))
         else:
-            write_encoded_data(f"{output_path}.{self.dictionary_k}", self.encoded_data)
-    
+            write_encoded_data(
+                f"{output_path}.{self.dictionary_k}", self.encoded_data)
+
     def decode(
             self,
             encoded_data: list,
             data_set: set,
             verbose: bool = True
-    )->list:
-    
+    ) -> list:
+
         if verbose:
             total_time_start = time()
             encoding_time_start = time()
 
-        reverse_dictionary = {i: (value,) for i, value in enumerate(sorted(data_set))}
+        reverse_dictionary = {i: (value,)
+                              for i, value in enumerate(sorted(data_set))}
 
         if verbose:
             print(f"Starting dictionary: {reverse_dictionary}")
@@ -106,7 +109,8 @@ class LZW:
             if idx in reverse_dictionary:
                 decoded_arr = reverse_dictionary[idx]
             else:
-                decoded_arr = reverse_dictionary[current_arr] + (reverse_dictionary[current_arr][0],)
+                decoded_arr = reverse_dictionary[current_arr] + \
+                    (reverse_dictionary[current_arr][0],)
 
             output.append(decoded_arr)
             combined_arr = reverse_dictionary[current_arr] + (decoded_arr[0],)
@@ -121,7 +125,8 @@ class LZW:
 
         if verbose:
             total_time_end = time()
-            print(f"Encoding time: {encoding_time_end-encoding_time_start} seconds")
+            print(
+                f"Encoding time: {encoding_time_end-encoding_time_start} seconds")
             print(f"Total time: {total_time_end-total_time_start} seconds")
 
         return output
@@ -130,8 +135,8 @@ class LZW:
             self,
             input_path: str,
             output_path: str = ""
-    )->list:
-        
+    ) -> list:
+
         if ".bin" in input_path:
             encoded_files = read_encoded_data(input_path)
             data = encoded_files[0]
