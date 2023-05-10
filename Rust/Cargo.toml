@@ -1,0 +1,12 @@
+[package]
+name = "compression"
+version = "0.0.1"
+license = "MIT"
+description = "Compression algorithms for Information Theory Course"
+authors = ["jpvt <jpvt@users.noreply.github.com>"]
+readme = "README.md"
+repository = "https://github.com/jpvt/information-theory"
+
+[features]
+default = ["raii_no_panic"]
+raii_no_panic = []
