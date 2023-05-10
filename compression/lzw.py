@@ -18,16 +18,12 @@ class LZW:
             original_set: set, 
             verbose: bool = True
     )->tuple:
-        
-        if verbose:
-            total_time_start = time()
 
         self.original_data, self.original_set = original_data, original_set
         del original_data 
         del original_set
 
-        if verbose:
-            encoding_time_start = time()
+        encoding_time_start = time()
 
         dictionary = {(value,): i for i, value in enumerate(self.original_set)}
 
@@ -53,18 +49,17 @@ class LZW:
             combined_arr = current_arr + (-1,)
             dictionary[combined_arr] = next_idx
 
+        encoding_time_end = time()
         if verbose:
-            encoding_time_end = time()
             print(f"Final dictionary: {dictionary}")
 
         self.encoded_data = output
 
+        total_encoding_time = encoding_time_end - encoding_time_start
         if verbose:
-            total_time_end = time()
-            print(f"Encoding time: {encoding_time_end-encoding_time_start} seconds")
-            print(f"Total time: {total_time_end-total_time_start} seconds")
+            print(f"Encoding time: {total_encoding_time} seconds")
 
-        return output, dictionary
+        return output, dictionary, total_encoding_time
     
     def encode_from_file(
             self,

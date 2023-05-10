@@ -1,3 +1,6 @@
+import time
+import os
+
 from compression import LZW
 from compression.helpers import read_data
 
@@ -12,7 +15,7 @@ class TestLZW:
             (100, 97): 11, (97, 98, 114): 12, (114, 97, -1): 13
         }
 
-        encoded_data, final_dict = LZW().encode(original_data=abracadabra_data, original_set=abracadabra_set, verbose=False)
+        encoded_data, final_dict, _ = LZW().encode(original_data=abracadabra_data, original_set=abracadabra_set, verbose=False)
 
         assert encoded_data == expected_data
         assert final_dict == expected_dict
@@ -25,7 +28,7 @@ class TestLZW:
             (100, 97): 11, (97, 98, 114): 12, (114, 97, -1): 13
         }
 
-        encoded_data, final_dict = LZW().encode_from_file("test/data/abracadabra.txt", False)
+        encoded_data, final_dict, _ = LZW().encode_from_file("test/data/abracadabra.txt", False)
 
         assert encoded_data == expected_data
         assert final_dict == expected_dict
@@ -34,7 +37,7 @@ class TestLZW:
         abracadabra_data = [ord(val) for val in "abracadabra"]
         abracadabra_set = sorted(set(abracadabra_data))
 
-        encoded_data, _ = LZW().encode(original_data=abracadabra_data, original_set=abracadabra_set, verbose=False)
+        encoded_data, _, _ = LZW().encode(original_data=abracadabra_data, original_set=abracadabra_set, verbose=False)
         decoded_data = LZW().decode(encoded_data, abracadabra_set, verbose=False)
 
         assert abracadabra_data == decoded_data
@@ -86,5 +89,38 @@ class TestLZW:
         original_data, _ = read_data("test/data/corpus16MB.txt", False)
 
         assert decoded_data == original_data
+
+    def test_varying_k(self)->None:
+        times = []
+        RC1 = []
+        RC2 = []
+
+        start_time = time.time()
+        with open(f"test/data/log_{start_time}.txt", "w") as f:
+            f.write(f"dict_k\t\t| Time\t\t| RC1\t\t| RC2\n")
+        
+        len_original_file = os.path.getsize("test/data/corpus16MB.txt")
+        for dict_k in range(9,17):
+            lzw = LZW(dictionary_k=dict_k)
+            output, dictionary, total_time = lzw.encode_from_file("test/data/corpus16MB.txt", False)
+            
+            times.append(total_time)
+
+            lzw.save_encoded_data("test/data/varying_k/encoded_corpus16MB")
+            del lzw
+
+            LZW().decode_from_file(f"test/data/varying_k/encoded_corpus16MB.{dict_k}", f"test/data/varying_k/decoded_corpus16MB_with_k{dict_k}.txt")
+            decoded_data, _ = read_data(f"test/data/varying_k/decoded_corpus16MB_with_k{dict_k}.txt", False)
+            original_data, _ = read_data("test/data/corpus16MB.txt", False)
+
+            assert decoded_data == original_data
+            
+            len_encoded_file = os.path.getsize(f"test/data/varying_k/encoded_corpus16MB.{dict_k}")
+
+            RC1.append(len_original_file/len_encoded_file)
+            RC2.append(len_original_file/(len(output)*dict_k/8))
+
+            with open(f"test/data/log_{start_time}.txt", "a") as f:
+                f.write(f"{dict_k}\t\t| {total_time:.4}\t\t| {RC1[-1]:.4}\t\t| {RC2[-1]:.4}\n")
 
 
