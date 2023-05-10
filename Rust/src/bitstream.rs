@@ -24,8 +24,10 @@ pub trait BitWriter {
     /// v: 
     /// n:
     fn write_bits(&mut self, v: u16, n: u8) -> io::Result<()>;
+    fn flush(&mut self) -> io::Result<()>;
 }
 
+#[macro_export]
 macro_rules! define_bit_readers {
     {$(
         $name:ident, #[$doc:meta];
@@ -120,6 +122,7 @@ impl BitReader for MsbReader {
     }
 }
 
+#[macro_export]
 macro_rules! define_bit_writers {
     {$(
         $name:ident, #[$doc:meta];
@@ -167,6 +170,7 @@ impl<W: Write> Write for $name<W> {
         }
         self.w.flush()
     }
+
 }
 
 )* // END Structure definitions
@@ -193,6 +197,14 @@ impl<W: Write> BitWriter for LsbWriter<W> {
         Ok(())
     }
 
+    fn flush(&mut self) -> io::Result<()> {
+        let missing = 8 - self.bits;
+        if missing > 0 {
+            self.write_bits(0, missing)?;
+        }
+        self.w.flush()
+    }
+
 }
 
 impl<W: Write> BitWriter for MsbWriter<W> {
@@ -207,6 +219,14 @@ impl<W: Write> BitWriter for MsbWriter<W> {
 
         }
         Ok(())
+    }
+
+    fn flush(&mut self) -> io::Result<()> {
+        let missing = 8 - self.bits;
+        if missing > 0 {
+            self.write_bits(0, missing)?;
+        }
+        self.w.flush()
     }
 
 }
