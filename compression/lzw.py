@@ -64,7 +64,7 @@ class LZW:
             print(f"Encoding time: {total_encoding_time} seconds")
 
         print(
-            f"len dictionary = {len(dictionary)} len output = {len(output)} len original = {len(self.original_data)} len_original/len_ouput = {len(self.original_data)/len(output)}")
+            f"len dictionary/max dict = {len(dictionary)/2**self.dictionary_k} len output = {len(output)} len original = {len(self.original_data)} len_original/len_ouput = {len(self.original_data)/len(output)}")
         return output, dictionary, total_encoding_time
 
     def encode_from_file(
