@@ -16,7 +16,9 @@ class LZW:
             self,
             original_data: list,
             original_set: set,
-            verbose: bool = True
+            verbose: bool = True,
+            existing_dict=None,
+            incremental: bool = True,
     ) -> tuple:
 
         self.original_data, self.original_set = original_data, original_set
@@ -25,7 +27,8 @@ class LZW:
 
         encoding_time_start = time()
 
-        dictionary = {(value,): i for i, value in enumerate(self.original_set)}
+        dictionary = {(value,): i for i, value in enumerate(
+            self.original_set)} if not existing_dict else existing_dict.copy()
 
         if verbose:
             print(f"Starting dictionary: {dictionary}")
@@ -39,7 +42,7 @@ class LZW:
             if combined_arr in dictionary:
                 current_arr = combined_arr
                 continue
-            elif self.dictionary_k == -1 or len(dictionary) < 2**self.dictionary_k:
+            elif (self.dictionary_k == -1 or len(dictionary) < 2**self.dictionary_k) and incremental:
                 dictionary[combined_arr] = next_idx
                 next_idx += 1
 
@@ -49,7 +52,7 @@ class LZW:
         if current_arr:
             output.append(dictionary[current_arr])
             combined_arr = current_arr + (-1,)
-            if self.dictionary_k != -1 and len(dictionary) == 2**self.dictionary_k:
+            if (self.dictionary_k != -1 and len(dictionary) == 2**self.dictionary_k) or not incremental:
                 pass
             else:
                 dictionary[combined_arr] = next_idx
